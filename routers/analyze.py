@@ -16,13 +16,13 @@ async def analyze_image(
     db: Session = Depends(get_db)
 ):
     if not file.filename:
-        raise HTTPException(status_code=400, detail="Файл не вказано.")
+        raise HTTPException(status_code=400, detail="Файл не вказано")
 
     file_bytes = await file.read()
     ai_res = await ai_client.predict_image(file_bytes, file.filename)
 
     if not ai_res.get("success"):
-        raise HTTPException(status_code=400, detail=ai_res.get("error", "Помилка аналізу зображення."))
+        raise HTTPException(status_code=400, detail=ai_res.get("error", "Помилка аналізу зображення"))
 
     species = ai_res["predicted_species"]
     conf = ai_res["confidence"]
@@ -70,13 +70,13 @@ async def analyze_audio(
     db: Session = Depends(get_db)
 ):
     if not file.filename:
-        raise HTTPException(status_code=400, detail="Файл не вказано.")
+        raise HTTPException(status_code=400, detail="Файл не вказано")
 
     file_bytes = await file.read()
     ai_res = await ai_client.predict_audio(file_bytes, file.filename)
 
     if not ai_res.get("success"):
-        raise HTTPException(status_code=400, detail=ai_res.get("error", "Помилка аналізу аудіо."))
+        raise HTTPException(status_code=400, detail=ai_res.get("error", "Помилка аналізу аудіо"))
 
     species = ai_res["predicted_species"]
     conf = ai_res["confidence"]
@@ -134,7 +134,7 @@ async def analyze_multimodal(
     aud_res = await ai_client.predict_audio(aud_bytes, audio_file.filename)
 
     if not img_res.get("success") or not aud_res.get("success"):
-        raise HTTPException(status_code=400, detail="Помилка мультимодальної обробки.")
+        raise HTTPException(status_code=400, detail="Помилка мультимодальної обробки")
 
     comp = await ai_client.compare_modalities(
         img_res["predicted_species"],

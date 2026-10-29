@@ -21,7 +21,17 @@ class AIClient:
 
     async def predict_audio(self, file_bytes: bytes, filename: str) -> Dict[str, Any]:
         url = f"{self.base_url}/predict/audio"
-        files = {"file": (filename, file_bytes, "audio/wav")}
+        ext = filename.rsplit('.', 1)[-1].lower() if '.' in filename else 'wav'
+        mime_map = {
+            'wav': 'audio/wav',
+            'flac': 'audio/flac',
+            'ogg': 'audio/ogg',
+            'mp3': 'audio/mpeg',
+            'm4a': 'audio/mp4',
+            'aac': 'audio/aac'
+        }
+        mime = mime_map.get(ext, 'application/octet-stream')
+        files = {"file": (filename, file_bytes, mime)}
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
                 response = await client.post(url, files=files)

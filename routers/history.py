@@ -42,7 +42,7 @@ def get_history(
 def delete_record(record_id: int, db: Session = Depends(get_db)):
     record = db.query(AnalysisRecord).filter(AnalysisRecord.id == record_id).first()
     if not record:
-        raise HTTPException(status_code=404, detail="Запис не знайдено.")
+        raise HTTPException(status_code=404, detail="Запис не знайдено")
 
     db.delete(record)
     db.commit()
