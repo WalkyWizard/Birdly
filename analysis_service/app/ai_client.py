@@ -1,7 +1,7 @@
 from typing import Dict, Any, Optional
 import httpx
 from fastapi import HTTPException
-import config
+from . import config
 
 class AIClient:
     def __init__(

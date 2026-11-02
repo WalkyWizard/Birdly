@@ -1,22 +1,22 @@
 services:
   history:
     build:
-      context: .
-      dockerfile: Dockerfile.history
+      context: history_service
+      dockerfile: Dockerfile
     ports:
       - "8020:8020"
     volumes:
-      - birdly_db:/app/db
+      - birdly_db:/app/app/db
     environment:
-      - DATABASE_URL=sqlite:////app/db/birdly_central.db
+      - DATABASE_URL=sqlite:////app/app/db/birdly_central.db
     restart: unless-stopped
     networks:
       - birdly_net
 
   catalog:
     build:
-      context: .
-      dockerfile: Dockerfile.catalog
+      context: catalog_service
+      dockerfile: Dockerfile
     ports:
       - "8030:8030"
     environment:
@@ -27,22 +27,22 @@ services:
 
   stats:
     build:
-      context: .
-      dockerfile: Dockerfile.stats
+      context: stats_service
+      dockerfile: Dockerfile
     ports:
       - "8040:8040"
     volumes:
-      - birdly_db:/app/db
+      - birdly_db:/app/app/db
     environment:
-      - DATABASE_URL=sqlite:////app/db/birdly_central.db
+      - DATABASE_URL=sqlite:////app/app/db/birdly_central.db
     restart: unless-stopped
     networks:
       - birdly_net
 
   analysis:
     build:
-      context: .
-      dockerfile: Dockerfile.analysis
+      context: analysis_service
+      dockerfile: Dockerfile
     ports:
       - "8010:8010"
     environment:
@@ -56,8 +56,8 @@ services:
 
   gateway:
     build:
-      context: .
-      dockerfile: Dockerfile.gateway
+      context: gateway_service
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
     environment:

@@ -2,7 +2,7 @@ from typing import Dict, Any
 import httpx
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-import config
+from . import config
 
 app = FastAPI(title="Birdly API Gateway")
 
@@ -79,4 +79,4 @@ def health_check() -> Dict[str, str]:
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("services.gateway_service:app", host=config.GATEWAY_HOST, port=config.GATEWAY_PORT, reload=False)
+    uvicorn.run("app.main:app", host=config.GATEWAY_HOST, port=config.GATEWAY_PORT, reload=False)

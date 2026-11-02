@@ -1,8 +1,8 @@
 from typing import Dict, Any
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import config
-from services.ai_client import ai_client
+from . import config
+from .ai_client import ai_client
 
 app = FastAPI(title="Birdly Catalog Microservice")
 
@@ -64,4 +64,4 @@ async def compare_birds(species_a: str, species_b: str) -> Dict[str, Any]:
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("services.catalog_service:app", host="127.0.0.1", port=config.CATALOG_SERVICE_PORT, reload=False)
+    uvicorn.run("app.main:app", host="127.0.0.1", port=8030, reload=False)

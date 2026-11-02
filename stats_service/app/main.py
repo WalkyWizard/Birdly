@@ -5,10 +5,10 @@ from typing import Dict, Any
 from fastapi import FastAPI, Depends, Response
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-import config
-from database import get_db
-from models import AnalysisRecord
-from schemas import StatsSummarySchema, HistoryRecordSchema
+from . import config
+from .database import get_db
+from .models import AnalysisRecord
+from .schemas import StatsSummarySchema, HistoryRecordSchema
 
 app = FastAPI(title="Birdly Stats Microservice")
 
@@ -93,4 +93,4 @@ def download_csv(db: Session = Depends(get_db)):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("services.stats_service:app", host="127.0.0.1", port=config.STATS_SERVICE_PORT, reload=False)
+    uvicorn.run("app.main:app", host="127.0.0.1", port=8040, reload=False)

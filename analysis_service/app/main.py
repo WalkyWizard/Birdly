@@ -4,9 +4,9 @@ from typing import Dict, Any
 import httpx
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-import config
-from services.ai_client import ai_client
-from schemas import (
+from . import config
+from .ai_client import ai_client
+from .schemas import (
     ImageAnalysisResponse,
     AudioAnalysisResponse,
     MultimodalAnalysisResponse,
@@ -221,4 +221,4 @@ async def analyze_multimodal(
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("services.analysis_service:app", host="127.0.0.1", port=config.ANALYSIS_SERVICE_PORT, reload=False)
+    uvicorn.run("app.main:app", host="127.0.0.1", port=8010, reload=False)

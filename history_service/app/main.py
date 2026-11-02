@@ -5,10 +5,10 @@ from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
-import config
-from database import get_db, engine, Base
-from models import AnalysisRecord
-from schemas import HistoryRecordSchema
+from . import config
+from .database import get_db, engine, Base
+from .models import AnalysisRecord
+from .schemas import HistoryRecordSchema
 
 Base.metadata.create_all(bind=engine)
 
@@ -146,4 +146,4 @@ def get_history_stats(db: Session = Depends(get_db)) -> Dict[str, Any]:
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("services.history_service:app", host="127.0.0.1", port=config.HISTORY_SERVICE_PORT, reload=False)
+    uvicorn.run("app.main:app", host="127.0.0.1", port=8020, reload=False)
