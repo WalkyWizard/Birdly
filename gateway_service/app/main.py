@@ -3,6 +3,7 @@ import httpx
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from . import config
+from .rabbit_client import publish_message, consume_messages, get_queue_info
 
 app = FastAPI(title="Birdly API Gateway")
 
@@ -72,6 +73,21 @@ async def route_stats_root(request: Request):
 @app.api_route("/api/stats/{path:path}", methods=["GET"])
 async def route_stats(request: Request, path: str):
     return await forward_request(f"{config.STATS_SERVICE_URL}/stats/{path}", request)
+
+@app.post("/api/messages")
+async def send_message(request: Request):
+    payload = await request.json()
+    ok = publish_message(payload)
+    return {"success": ok, "queue": "birdly_notifications", "sent_message": payload}
+
+@app.get("/api/messages")
+async def get_messages(limit: int = 10):
+    msgs = consume_messages("birdly_notifications", max_messages=limit)
+    return {"queue": "birdly_notifications", "count": len(msgs), "messages": msgs}
+
+@app.get("/api/messages/status")
+async def get_rabbit_status():
+    return get_queue_info("birdly_notifications")
 
 @app.get("/health")
 def health_check() -> Dict[str, str]:

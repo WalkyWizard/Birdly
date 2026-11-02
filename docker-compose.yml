@@ -1,4 +1,17 @@
 services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    restart: unless-stopped
+    networks:
+      - birdly_net
+
   history:
     build:
       context: history_service
@@ -50,6 +63,9 @@ services:
       - AI_AUDIO_URL=http://ai-audio:8002
       - AI_INFO_URL=http://ai-info:8003
       - HISTORY_SERVICE_URL=http://history:8020
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    depends_on:
+      - rabbitmq
     restart: unless-stopped
     networks:
       - birdly_net
@@ -65,6 +81,9 @@ services:
       - HISTORY_SERVICE_URL=http://history:8020
       - CATALOG_SERVICE_URL=http://catalog:8030
       - STATS_SERVICE_URL=http://stats:8040
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    depends_on:
+      - rabbitmq
     restart: unless-stopped
     networks:
       - birdly_net

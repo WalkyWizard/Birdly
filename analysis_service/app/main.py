@@ -6,6 +6,7 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from . import config
 from .ai_client import ai_client
+from .rabbit_client import publish_notification
 from .schemas import (
     ImageAnalysisResponse,
     AudioAnalysisResponse,
@@ -79,6 +80,15 @@ async def analyze_image(file: UploadFile = File(...)):
 
     record_id = await save_history_record(record_payload)
 
+    publish_notification({
+        "event": "analysis_completed",
+        "analysis_type": "image",
+        "file_name": file.filename,
+        "predicted_species": species,
+        "confidence": conf,
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    })
+
     return ImageAnalysisResponse(
         success=True,
         record_id=record_id,
@@ -130,6 +140,15 @@ async def analyze_audio(file: UploadFile = File(...)):
     }
 
     record_id = await save_history_record(record_payload)
+
+    publish_notification({
+        "event": "analysis_completed",
+        "analysis_type": "audio",
+        "file_name": file.filename,
+        "predicted_species": species,
+        "confidence": conf,
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    })
 
     return AudioAnalysisResponse(
         success=True,
@@ -191,6 +210,18 @@ async def analyze_multimodal(
     }
 
     record_id = await save_history_record(record_payload)
+
+    publish_notification({
+        "event": "analysis_completed",
+        "analysis_type": "multimodal",
+        "image_file": image_file.filename,
+        "audio_file": audio_file.filename,
+        "predicted_species": img_res["predicted_species"],
+        "confidence": img_res["confidence"],
+        "is_match": comp["is_match"],
+        "verdict": comp["verdict"],
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    })
 
     return MultimodalAnalysisResponse(
         success=True,
