@@ -1,16 +1,30 @@
 import io
 import csv
 from collections import Counter
-from typing import Dict, Any, List
-from fastapi import APIRouter, Depends, Response
+from typing import Dict, Any
+from fastapi import FastAPI, Depends, Response
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+import config
 from database import get_db
 from models import AnalysisRecord
 from schemas import StatsSummarySchema, HistoryRecordSchema
 
-router = APIRouter(prefix="/api/stats", tags=["Stats"])
+app = FastAPI(title="Birdly Stats Microservice")
 
-@router.get("", response_model=StatsSummarySchema)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=config.CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/health")
+def health_check() -> Dict[str, str]:
+    return {"status": "ok", "service": "Birdly Stats Microservice"}
+
+@app.get("/stats", response_model=StatsSummarySchema)
 def get_stats(db: Session = Depends(get_db)):
     records = db.query(AnalysisRecord).all()
     total = len(records)
@@ -35,7 +49,7 @@ def get_stats(db: Session = Depends(get_db)):
         lowest_confidence=HistoryRecordSchema.from_orm(lowest) if lowest else None
     )
 
-@router.get("/csv")
+@app.get("/stats/csv")
 def download_csv(db: Session = Depends(get_db)):
     records = db.query(AnalysisRecord).order_by(AnalysisRecord.id.desc()).all()
 
@@ -76,3 +90,7 @@ def download_csv(db: Session = Depends(get_db)):
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=bird_analysis.csv"}
     )
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("services.stats_service:app", host="127.0.0.1", port=config.STATS_SERVICE_PORT, reload=False)

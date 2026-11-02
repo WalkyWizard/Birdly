@@ -1,19 +1,33 @@
 from typing import Dict, Any
-from fastapi import APIRouter
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+import config
 from services.ai_client import ai_client
 
-router = APIRouter(prefix="/api/birds", tags=["Birds"])
+app = FastAPI(title="Birdly Catalog Microservice")
 
-@router.get("")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=config.CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/health")
+def health_check() -> Dict[str, str]:
+    return {"status": "ok", "service": "Birdly Catalog Microservice"}
+
+@app.get("/birds")
 async def get_birds_metadata() -> Dict[str, Any]:
     return await ai_client.get_all_birds()
 
-@router.get("/info/{species_name}")
+@app.get("/birds/info/{species_name}")
 async def get_bird_details(species_name: str) -> Dict[str, Any]:
     return await ai_client.get_bird_info(species_name)
 
-@router.get("/compare/{species_a}/{species_b}")
-async def compare_birds_endpoint(species_a: str, species_b: str) -> Dict[str, Any]:
+@app.get("/birds/compare/{species_a}/{species_b}")
+async def compare_birds(species_a: str, species_b: str) -> Dict[str, Any]:
     info1 = await ai_client.get_bird_info(species_a)
     info2 = await ai_client.get_bird_info(species_b)
 
@@ -47,3 +61,7 @@ async def compare_birds_endpoint(species_a: str, species_b: str) -> Dict[str, An
         "same_family": same_family,
         "comparison_rows": rows
     }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("services.catalog_service:app", host="127.0.0.1", port=config.CATALOG_SERVICE_PORT, reload=False)

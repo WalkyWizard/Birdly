@@ -4,11 +4,18 @@ from fastapi import HTTPException
 import config
 
 class AIClient:
-    def __init__(self, base_url: str = config.AI_SERVER_URL):
-        self.base_url = base_url.rstrip("/")
+    def __init__(
+        self,
+        vision_url: str = config.AI_VISION_URL,
+        audio_url: str = config.AI_AUDIO_URL,
+        info_url: str = config.AI_INFO_URL
+    ):
+        self.vision_url = vision_url.rstrip("/")
+        self.audio_url = audio_url.rstrip("/")
+        self.info_url = info_url.rstrip("/")
 
     async def predict_image(self, file_bytes: bytes, filename: str) -> Dict[str, Any]:
-        url = f"{self.base_url}/predict/image"
+        url = f"{self.vision_url}/predict/image"
         files = {"file": (filename, file_bytes, "image/jpeg")}
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
@@ -17,10 +24,10 @@ class AIClient:
                     raise HTTPException(status_code=response.status_code, detail=f"Помилка AI сервера: {response.text}")
                 return response.json()
         except httpx.RequestError as exc:
-            raise HTTPException(status_code=503, detail=f"Неможливо з'єднатися з AI сервером: {str(exc)}")
+            raise HTTPException(status_code=503, detail=f"Неможливо з'єднатися з сервісом розпізнавання зображень: {str(exc)}")
 
     async def predict_audio(self, file_bytes: bytes, filename: str) -> Dict[str, Any]:
-        url = f"{self.base_url}/predict/audio"
+        url = f"{self.audio_url}/predict/audio"
         ext = filename.rsplit('.', 1)[-1].lower() if '.' in filename else 'wav'
         mime_map = {
             'wav': 'audio/wav',
@@ -39,7 +46,7 @@ class AIClient:
                     raise HTTPException(status_code=response.status_code, detail=f"Помилка AI сервера: {response.text}")
                 return response.json()
         except httpx.RequestError as exc:
-            raise HTTPException(status_code=503, detail=f"Неможливо з'єднатися з AI сервером: {str(exc)}")
+            raise HTTPException(status_code=503, detail=f"Неможливо з'єднатися з сервісом розпізнавання аудіо: {str(exc)}")
 
     async def compare_modalities(
         self,
@@ -48,7 +55,7 @@ class AIClient:
         image_confidence: float,
         audio_confidence: float
     ) -> Dict[str, Any]:
-        url = f"{self.base_url}/compare/modalities"
+        url = f"{self.info_url}/compare/modalities"
         data = {
             "image_species": image_species,
             "audio_species": audio_species,
@@ -62,10 +69,10 @@ class AIClient:
                     raise HTTPException(status_code=response.status_code, detail=f"Помилка AI сервера: {response.text}")
                 return response.json()
         except httpx.RequestError as exc:
-            raise HTTPException(status_code=503, detail=f"Неможливо з'єднатися з AI сервером: {str(exc)}")
+            raise HTTPException(status_code=503, detail=f"Неможливо з'єднатися з сервісом зіставлення: {str(exc)}")
 
     async def get_bird_info(self, species_name: str) -> Dict[str, Any]:
-        url = f"{self.base_url}/birds/{species_name}"
+        url = f"{self.info_url}/birds/{species_name}"
         try:
             async with httpx.AsyncClient(timeout=10.0) as client:
                 response = await client.get(url)
@@ -76,7 +83,7 @@ class AIClient:
             return {}
 
     async def get_all_birds(self) -> Dict[str, Any]:
-        url = f"{self.base_url}/birds"
+        url = f"{self.info_url}/birds"
         try:
             async with httpx.AsyncClient(timeout=10.0) as client:
                 response = await client.get(url)
@@ -85,5 +92,17 @@ class AIClient:
                 return {"families": [], "habitats": [], "diets": [], "species": []}
         except httpx.RequestError:
             return {"families": [], "habitats": [], "diets": [], "species": []}
+
+    async def compare_species(self, species_a: str, species_b: str) -> Dict[str, Any]:
+        url = f"{self.info_url}/compare/species"
+        data = {"species_a": species_a, "species_b": species_b}
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                response = await client.post(url, data=data)
+                if response.status_code == 200:
+                    return response.json()
+                return {}
+        except httpx.RequestError:
+            return {}
 
 ai_client = AIClient()
