@@ -1,0 +1,17 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY config.py .
+COPY database.py .
+COPY models.py .
+COPY schemas.py .
+COPY services/__init__.py services/__init__.py
+COPY services/history_service.py services/history_service.py
+
+EXPOSE 8020
+
+CMD ["python", "-m", "uvicorn", "services.history_service:app", "--host", "0.0.0.0", "--port", "8020"]

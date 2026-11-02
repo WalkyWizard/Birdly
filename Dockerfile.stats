@@ -1,0 +1,17 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY config.py .
+COPY database.py .
+COPY models.py .
+COPY schemas.py .
+COPY services/__init__.py services/__init__.py
+COPY services/stats_service.py services/stats_service.py
+
+EXPOSE 8040
+
+CMD ["python", "-m", "uvicorn", "services.stats_service:app", "--host", "0.0.0.0", "--port", "8040"]

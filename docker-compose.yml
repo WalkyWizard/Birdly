@@ -1,0 +1,77 @@
+services:
+  history:
+    build:
+      context: .
+      dockerfile: Dockerfile.history
+    ports:
+      - "8020:8020"
+    volumes:
+      - birdly_db:/app/db
+    environment:
+      - DATABASE_URL=sqlite:////app/db/birdly_central.db
+    restart: unless-stopped
+    networks:
+      - birdly_net
+
+  catalog:
+    build:
+      context: .
+      dockerfile: Dockerfile.catalog
+    ports:
+      - "8030:8030"
+    environment:
+      - AI_INFO_URL=http://ai-info:8003
+    restart: unless-stopped
+    networks:
+      - birdly_net
+
+  stats:
+    build:
+      context: .
+      dockerfile: Dockerfile.stats
+    ports:
+      - "8040:8040"
+    volumes:
+      - birdly_db:/app/db
+    environment:
+      - DATABASE_URL=sqlite:////app/db/birdly_central.db
+    restart: unless-stopped
+    networks:
+      - birdly_net
+
+  analysis:
+    build:
+      context: .
+      dockerfile: Dockerfile.analysis
+    ports:
+      - "8010:8010"
+    environment:
+      - AI_VISION_URL=http://ai-vision:8001
+      - AI_AUDIO_URL=http://ai-audio:8002
+      - AI_INFO_URL=http://ai-info:8003
+      - HISTORY_SERVICE_URL=http://history:8020
+    restart: unless-stopped
+    networks:
+      - birdly_net
+
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - ANALYSIS_SERVICE_URL=http://analysis:8010
+      - HISTORY_SERVICE_URL=http://history:8020
+      - CATALOG_SERVICE_URL=http://catalog:8030
+      - STATS_SERVICE_URL=http://stats:8040
+    restart: unless-stopped
+    networks:
+      - birdly_net
+
+volumes:
+  birdly_db:
+
+networks:
+  birdly_net:
+    external: true
